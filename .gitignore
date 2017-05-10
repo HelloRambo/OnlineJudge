@@ -4,11 +4,17 @@
 /dist
 /tmp
 
+/public
+
+oj-client/dist/
+
 # dependencies
-/node_modules
+oj-client/node_modules
+oj-server/node_modules
 
 # IDEs and editors
 /.idea
+oj-client/.idea
 .project
 .classpath
 .c9/
