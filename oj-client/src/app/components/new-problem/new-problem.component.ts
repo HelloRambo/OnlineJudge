@@ -1,6 +1,7 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { Problem } from '../../models/problem.model';
 
+
 const DEFAULT_PROBLEM: Problem = Object.freeze({
   id: 0,
   name: '',
@@ -20,7 +21,8 @@ export class NewProblemComponent implements OnInit {
 
   newProblem: Problem = Object.assign({}, DEFAULT_PROBLEM);
 
-  constructor(@Inject('data') private data) { }
+  constructor(@Inject('data') private data,
+              @Inject('authGuard') private authGuard) { }
 
   ngOnInit() {
   }

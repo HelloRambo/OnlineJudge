@@ -17,9 +17,10 @@ const routes: Routes = [
   {
     path: 'problems/:id',
     component: ProblemDetailComponent
-  }, {
+  },
+  {
     path: 'profile',
-    canActivate: [AuthGuardService],
+    canActivate: ['authGuard'],
     component: ProfileComponent
   },
   {
