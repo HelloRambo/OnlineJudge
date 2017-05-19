@@ -1,16 +1,36 @@
 module.exports = function(io) {
+
+    var collaborations = [];
+
+    var socketIdToSessionId = [];
+
     io.on('connection', (socket) => {
-        var currentdate = new Date();
-        var datetime = "Last Sync: " + currentdate.getDate() + "/"
-          + (currentdate.getMonth()+1)  + "/"
-          + currentdate.getFullYear() + " @ "
-          + currentdate.getHours() + ":"
-          + currentdate.getMinutes() + ":"
-          + currentdate.getSeconds();
-        console.log('a user connect', datetime)
-        var message = socket.handshake.query['message'];
-        console.log(message);
-        console.log(socket.id)
+        let sessionId = socket.handshake.query['sessionId'];
+
+        socketIdToSessionId[socket.id] = sessionId;
+
+        if (!(sessionId in collaborations)) {
+            collaborations[sessionId] = {
+                'participants': []
+            };
+        }
+        collaborations[sessionId]['participants'].push(socket.id);
+
+        socket.on('change', delta => {
+            console.log('change' + socketIdToSessionId[socket.id] + ' ' + delta);
+            let sessionId = socketIdToSessionId[socket.id];
+            if (sessionId in collaborations) {
+                let participants = collaborations[sessionId]['participants'];
+                for (let i = 0; i < participants.length; i++) {
+                    if (socket.id !== participants[i]) {
+                        io.to(participants[i]).emit('change', delta);
+                    }
+                }
+            } else {
+                console.log("WARNING: could not tie socket_id to any collaboration");
+            }
+
+        })
 
         io.to(socket.id).emit('message', 'hehe from server');
    });

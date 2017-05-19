@@ -1,5 +1,6 @@
 import {Component, Inject, OnInit} from '@angular/core';
-import {  } from '../../models/problem.model';
+
+import { ActivatedRoute, Params} from '@angular/router';
 
 declare var ace: any;
 
@@ -13,7 +14,9 @@ export class EditorComponent implements OnInit {
   editor: any;
 
   public languages: string[] = ['Java', 'C++', 'Python'];
-  language: string = 'Java'; // default
+  language = 'Java'; // default
+
+  sessionId: string;
 
   defaultContent = {
     'Java': `public class Example {
@@ -35,14 +38,33 @@ export class EditorComponent implements OnInit {
 
 
 
-  constructor(@Inject('collaboration') private collaboration) { }
+  constructor(@Inject('collaboration') private collaboration,
+              private route: ActivatedRoute) { }
 
   ngOnInit() {
+    this.route.params
+      .subscribe(params => {
+        this.sessionId = params['id'];
+        this.initEdit();
+      });
+  }
+
+  initEdit() {
     this.editor = ace.edit('editor');
     this.editor.setTheme('ace/theme/eclipse');
     this.resetEditor();
     this.editor.$blockScrolling = Infinity;
-    this.collaboration.init();
+
+    document.getElementsByTagName('textarea')[0].focus();
+
+    this.collaboration.init(this.editor, this.sessionId);
+    this.editor.lastAppliedChange = null;
+    this.editor.on('change', (e) => {
+      console.log('editor changes: ' + JSON.stringify(e));
+      if (this.editor.lastAppliedChange !== e) {
+        this.collaboration.change(JSON.stringify(e));
+      }
+    });
   }
 
   setLanguage(language: string): void {
@@ -56,7 +78,7 @@ export class EditorComponent implements OnInit {
   }
 
   submit(): void {
-    let userCode = this.editor.getValue();
+    const userCode = this.editor.getValue();
     console.log(userCode);
 }
 
