@@ -1,18 +1,22 @@
 import { Injectable } from '@angular/core';
-import {del} from 'selenium-webdriver/http';
+
+import { COLORS } from '../../assets/colors';
 
 declare var io: any;
+declare var ace: any;
 
 @Injectable()
 export class CollaborationService {
 
   collaborationSocket: any;
+  clientsInfo: Object = {};
+  clientNumb: number = 0;
 
   constructor() { }
 
   init(editor: any, sessionId: string): void {
-    console.log('location', window.location.origin);
-    this.collaborationSocket = io(window.location.origin, { query: 'sessionId' + sessionId });
+    console.log('session id collaboration', sessionId)
+    this.collaborationSocket = io(window.location.origin, { query: 'sessionId=' + sessionId });
 /*    this.collaborationSocket = io({ query: 'message=' + '123'});*/
 
     this.collaborationSocket.on('change', (delta: string) => {
@@ -22,6 +26,39 @@ export class CollaborationService {
       editor.getSession().getDocument().applyDeltas([delta]);
     });
 
+    this.collaborationSocket.on('cursorMove', (cursor) => {
+      console.log('cursor move' + cursor);
+      const session = editor.getSession();
+      cursor = JSON.parse(cursor);
+      const x = cursor['row'];
+      const y = cursor['column'];
+      const changeClientId = cursor['socketId'];
+      console.log(x + ' ' + y + ' ' + changeClientId);
+
+      if (changeClientId in this.clientsInfo) {
+        session.removeMarker(this.clientsInfo[changeClientId]['marker']);
+      } else {
+        this.clientsInfo[changeClientId] = {};
+
+        const css = document.createElement('style');
+        css.type = 'text/css';
+        css.innerHTML = '.editor_cursor_' + changeClientId
+          + '{ position:absolute; background:' + COLORS[this.clientNumb] + ';'
+          + ' z-index: 100; width:3px !important;}';
+
+        document.body.appendChild(css);
+        this.clientNumb++;
+      }
+
+      let Range = ace.require('ace/range').Range;
+      let newMarker = session.addMarker(new Range(x, y, x, y + 1), 'editor_cursor_' + changeClientId, true);
+      this.clientsInfo[changeClientId]['marker'] = newMarker;
+
+    });
+
+
+
+    // Test
     this.collaborationSocket.on('message', message => {
       console.log('received' + message);
     });
@@ -34,4 +71,12 @@ export class CollaborationService {
     this.collaborationSocket.emit('change', delta);
   }
 
+  cursorMove(cursor: string): void {
+    this.collaborationSocket.emit('cursorMove', cursor);
+  }
+
+  restoreBuffer(): void {
+    console.log('client emit restore buffer')
+    this.collaborationSocket.emit('restoreBuffer');
+  }
 }
