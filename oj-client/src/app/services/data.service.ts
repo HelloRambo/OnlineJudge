@@ -32,11 +32,22 @@ export class DataService {
   }
 
   addProblem(problem: Problem): Promise<Problem> {
-    const headers = new Headers({ 'content-type': 'application/json'});
+    let headers = new Headers({ 'content-type': 'application/json'});
     return this.http.post('/api/v1/problems', problem, headers)
       .toPromise()
       .then((res: Response) => {
         this.getProblems();
+        return res.json();
+      })
+      .catch(this.handleError);
+  }
+
+  buildAndRun(data): Promise<Object> {
+    let headers = new Headers({ 'content-type': 'application/json'});
+    return this.http.post('/api/v1/build_and_run', data, headers)
+      .toPromise()
+      .then((res: Response) => {
+        console.log('data.service',res.json());
         return res.json();
       })
       .catch(this.handleError);

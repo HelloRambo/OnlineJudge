@@ -18,6 +18,8 @@ export class EditorComponent implements OnInit {
 
   sessionId: string;
 
+  output: string;
+
   defaultContent = {
     'Java': `public class Example {
      public static void main(String[] args) {
@@ -39,6 +41,7 @@ export class EditorComponent implements OnInit {
 
 
   constructor(@Inject('collaboration') private collaboration,
+              @Inject('data') private data,
               private route: ActivatedRoute) { }
 
   ngOnInit() {
@@ -84,11 +87,18 @@ export class EditorComponent implements OnInit {
   resetEditor(): void {
     this.editor.getSession().setMode('ace/mode/' + this.language.toLowerCase());
     this.editor.setValue(this.defaultContent[this.language]);
+    this.output = 'output...';
   }
 
   submit(): void {
     const userCode = this.editor.getValue();
-    console.log(userCode);
+    let data = {
+      user_code: userCode,
+      lang: this.language.toLowerCase()
+    };
+    this.data.buildAndRun(data)
+      .then(
+        res => this.output = res.text);
   }
 
 }
