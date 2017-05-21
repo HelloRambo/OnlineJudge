@@ -1,0 +1,16 @@
+adium-theme-ubuntu==0.3.4
+backports.ssl-match-hostname==3.5.0.1
+click==6.7
+docker==2.3.0
+docker-pycreds==0.2.1
+Flask==0.12.2
+ipaddress==1.0.18
+itsdangerous==0.24
+Jinja2==2.9.6
+MarkupSafe==1.0
+pygobject==3.20.0
+requests==2.14.2
+six==1.10.0
+unity-lens-photos==1.0
+websocket-client==0.40.0
+Werkzeug==0.12.2
